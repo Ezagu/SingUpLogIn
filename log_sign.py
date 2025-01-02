@@ -10,7 +10,7 @@ class LogSign:
         self.conn = sqlite3.connect("database.db")
 
     def log_in(self, username, password):
-        """Return if the user is on the database"""
+        """Return if the user is on the database and a message"""
         query = '''
             SELECT password FROM users
             WHERE user_name = ?
@@ -20,21 +20,17 @@ class LogSign:
             cursor.execute(query, (username,))
             result = cursor.fetchone()
         except sqlite3.Error as e:
-            print(f"Error al iniciar sesion: {e}")
-            return False
+            return False, f"Error al iniciar sesion: {e}"
         finally:
             cursor.close()
 
         if not result:
-            print("Usuario no encontrado")
-            return False
+            return False, "Usuario no encontrado"
         else:
             if checkpw(password.encode(), result[0]):
-                print("Correct log in")
-                return True
+                return True, "Correct log in"
             else:
-                print("Contraseña incorrecta")
-                return False
+                return False, "Contraseña incorrecta"
 
     def sign_up(self, username, email, password):
         """Update the database with the parameters, return if can be updated"""
