@@ -13,11 +13,11 @@ class LogSign:
         """Return if the user is on the database and a message"""
         query = '''
             SELECT password FROM users
-            WHERE user_name = ?
+            WHERE user_name = ? OR email = ?
         '''
         try:
             cursor = self.conn.cursor()
-            cursor.execute(query, (username,))
+            cursor.execute(query, (username, username))
             result = cursor.fetchone()
         except sqlite3.Error as e:
             return False, f"Error al iniciar sesion: {e}"
@@ -33,9 +33,8 @@ class LogSign:
                 return False, "Contraseña incorrecta"
 
     def sign_up(self, username, email, password):
-        """Update the database with the parameters, return if can be updated"""
+        """Update the database with the parameters, return if can be updated an a message"""
         hashed_password = hashpw(password.encode(), gensalt())
-        print()
         query = '''
             INSERT INTO users (user_name, email, password)
             VALUES (?, ?, ?)
@@ -44,8 +43,8 @@ class LogSign:
             cursor = self.conn.cursor()
             cursor.execute(query, (username, email, hashed_password))
             self.conn.commit()
-            print("Usuario registrado")
-        except sqlite3.IntegrityError:
-            print("El usuario o el correo ya están registrados.")
-        finally:
             cursor.close()
+            return True, "Usuario registrado con éxito"
+        except sqlite3.IntegrityError:
+            cursor.close()
+            return False, "El usuario o el correo ya están registrados"
