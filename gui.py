@@ -161,7 +161,3 @@ class Gui:
         """Toggle to show or not the password"""
         toggle = self.varcon_showpassword.get()
         self.password_entry.config(show='' if toggle else '*')
-
-    def start(self):
-        """Start the root"""
-        self.ventana.mainloop()

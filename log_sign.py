@@ -1,5 +1,7 @@
 """Connection with the database"""
 import sqlite3
+import sys
+from os import path
 from bcrypt import hashpw, gensalt, checkpw
 
 
@@ -7,7 +9,12 @@ class LogSign:
     """Connection with the database"""
 
     def __init__(self):
-        self.conn = sqlite3.connect("database.db")
+        path_to_db = "database.db"
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            # Si se ejecuta en un .exe
+            bundle_dir = path.abspath(path.dirname(__file__))
+            path_to_db = path.join(bundle_dir, 'database.db')
+        self.conn = sqlite3.connect(path_to_db)
 
     def log_in(self, username, password):
         """Return if the user is on the database and a message"""
