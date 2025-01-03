@@ -1,7 +1,8 @@
 """Connection with the database"""
 import sqlite3
 import sys
-from os import path
+import os
+import shutil
 from bcrypt import hashpw, gensalt, checkpw
 
 
@@ -9,12 +10,24 @@ class LogSign:
     """Connection with the database"""
 
     def __init__(self):
-        path_to_db = "database.db"
-        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            # Si se ejecuta en un .exe
-            bundle_dir = path.abspath(path.dirname(__file__))
-            path_to_db = path.join(bundle_dir, 'database.db')
-        self.conn = sqlite3.connect(path_to_db)
+        # Definiendo una ubicación para la base de datos
+        base_dir = os.path.join(os.getenv('APPDATA'), "singuplogin")
+        os.makedirs(base_dir, exist_ok=True)  # Crea el directorio si no existe
+
+        self.db_path = os.path.join(base_dir, "database.db")
+
+        # Si la bd no existe en la ubicación se copia
+        if not os.path.exists(self.db_path):
+            if getattr(sys, 'frozen', False):  # Si es un ejecutable
+                original_db = os.path.join(sys._MEIPASS, "database.db")
+            else:
+                original_db = os.path.join(
+                    os.path.dirname(__file__), "database.db")
+
+            # Copia la base de datos
+            shutil.copyfile(original_db, self.db_path)
+
+        self.conn = sqlite3.connect(self.db_path)
 
     def log_in(self, username, password):
         """Return if the user is on the database and a message"""
